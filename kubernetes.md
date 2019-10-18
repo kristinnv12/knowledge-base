@@ -2,7 +2,7 @@
 title: Kubernetes
 description: 
 published: true
-date: 2019-10-18T11:46:19.612Z
+date: 2019-10-18T12:00:52.211Z
 tags: 
 ---
 
