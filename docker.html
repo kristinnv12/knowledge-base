@@ -6,4 +6,112 @@ date: 2019-10-18T11:41:02.050Z
 tags: 
 -->
 
-<p>ble</p><p>&nbsp;</p>
+<h2>​Docker disk space low&#160;<br/></h2>
+<div>
+   <br/>
+</div>
+<div>If the disk is full run the &quot;Cleanup DockerX&quot; task in VisualCron. To run the clean up script manually use:&#160;</div>
+<div>
+   <em>​docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v /etc:/etc:ro spotify/docker-gc&#160;</em><br/></div>
+<p>​​<br/></p>
+<h2>Disable AzureAD on Rancher&#160;<br/></h2>
+<div>
+   <br/>
+</div>
+<div>
+   <em>mysql -h aurora-cluster.cluster-cfs6yhnknntt.eu-west-2.rds.amazonaws.com -P 3306 -u master -p cattle&#160;</em></div>
+<div>
+   <br/>
+</div>
+<div>
+   <em>mysql&gt; update setting set value=&quot;false&quot; where name=&quot;api.security.enabled&quot;;&#160;&#160;</em></div>
+<div>
+   <br/>
+</div>
+<div>
+   <em>mysql&gt; update setting set value=&quot;&quot; where name=&quot;api.auth.provider.configured&quot;;&#160;</em></div>
+<div>
+   <br/>
+</div>
+<div>This will disable login to Rancher.​<br/>​</div>
+<div>Rancher setup info is available at https://gitlab.ja.internal/ja/gitlab/wikis/docker-setup​<br/><br/></div>
+<div> 
+   <style>
+</style> 
+   <h2>Upgrading Rancher services without downtime<br/></h2>
+   <p class="p1">
+      <br/>
+   </p>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <span class="ms-rteThemeForeColor-1-1">*<span class="Apple-converted-space ms-rteThemeForeColor-1-1">&#160;</span><strong>The service needs a healthcheck</strong>. Most our services have this. To get healthcheck to endpoint to work properly you need request_line to define the host header. Example:</span></div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">health_check:</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; port: 8000</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; initializing_timeout: 60000</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; reinitializing_timeout: 60000</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; interval: 2000</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; response_timeout: 2000</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; healthy_threshold: 2</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; unhealthy_threshold: 3</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; strategy: recreateOnQuorum</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; recreate_on_quorum_strategy_config:</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; &#160; quorum: 1</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; request_line: &#39;GET &quot;/&quot; &quot;HTTP/1.1\r\nHost: staging-shopping-list.docker.ja.internal&quot;&#39;</span></div>
+   </div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <br class="ms-rteThemeForeColor-1-1"/>
+   </div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <span class="ms-rteThemeForeColor-1-1">*</span><span class="Apple-converted-space ms-rteThemeForeColor-1-1">&#160;</span><strong class="ms-rteThemeForeColor-1-1">The service needs a drain timeout</strong><span class="ms-rteThemeForeColor-1-1">. This makes the service wait until it has no HAProxy connections before shutting down. Just a drain_timeout_ms option in rancher-compose.yml. Note that you have to use Rancher CLI instead of Rancher Compose CLI, which all our services currently use. The syntax is similar, see here how to change over:&#160;</span><a href="https://gitlab.ja.internal/ja/shopping-list/commit/4fc0639b5a175d0433278bcff925ee9b55baed3d"><span class="ms-rteThemeForeColor-1-1">https://gitlab.ja.internal/ja/shopping-list/commit/4fc0639b5a175d0433278bcff925ee9b55baed3d</span></a><span class="ms-rteThemeForeColor-1-1">.</span></div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <br class="ms-rteThemeForeColor-1-1"/>
+   </div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <span class="ms-rteThemeForeColor-1-1">*<span class="Apple-converted-space ms-rteThemeForeColor-1-1">&#160;</span><strong>The upgrade strategy should be start first</strong>. This lets Rancher create new containers before shutting the old ones down. If the services exposes a port it probably shouldn’t use this. In rancher-compose.yml:</span></div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">upgrade_strategy:</span></div>
+      <div>
+         <span class="ms-rteThemeForeColor-1-1">&#160; &#160; &#160; start_first: true</span></div>
+   </div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <br class="ms-rteThemeForeColor-1-1"/>
+   </div>
+   <div style="font-family: helvetica; font-size: 12px;">
+      <span class="ms-rteThemeForeColor-1-1">Here are the relevant files in shopping-list where this is working:</span></div>
+   <div style="color: #000000; font-family: helvetica; font-size: 12px;">
+      <a href="https://gitlab.ja.internal/ja/shopping-list/blob/master/.gitlab-ci.yml">https://gitlab.ja.internal/ja/shopping-list/blob/master/.gitlab-ci.yml</a></div>
+   <div style="color: #000000; font-family: helvetica; font-size: 12px;">
+      <a href="https://gitlab.ja.internal/ja/shopping-list/blob/master/docker-compose.yml">https://gitlab.ja.internal/ja/shopping-list/blob/master/docker-compose.yml</a></div>
+   <div style="color: #000000; font-family: helvetica; font-size: 12px;">
+      <a href="https://gitlab.ja.internal/ja/shopping-list/blob/master/rancher-compose.yml">https://gitlab.ja.internal/ja/shopping-list/blob/master/rancher-compose.yml</a>​<br/></div>
+   <p class="p1">
+      <br/>
+   </p>
+   <h2>Fixing load balancer issues<br/></h2>
+   <p class="p1">
+      <br/>
+   </p>
+   <div style="color: #000000; font-family: helvetica; font-size: 12px;">
+      <span class="ms-rteThemeForeColor-1-1">Go to </span>
+      <a href="https://rancher.ja.is/env/1a5/apps/stacks/1st2/services/1s11/containers">
+         <span class="ms-rteThemeForeColor-1-1">Rancher -&gt; Default stack -&gt; Internal loadbalancer (linked here)</span></a><span class="ms-rteThemeForeColor-1-1"> and delete the broken load balancer. Rancher will then recreate it which should fix the problem.</span><br/></div>
+   <p class="p1">
+      <br/>
+   </p>
+   <h2>
+      <br/>
+   </h2>
+</div>
